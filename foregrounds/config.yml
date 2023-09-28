@@ -1,0 +1,52 @@
+cosmology:
+
+    CMB:
+        A_lens: 1.
+        r_tensor: 0.
+
+    dust:
+
+        amp_d_bb: 63. # 28. # from BICEP field 1510.09217
+        alpha_d_bb: -0.50 #4 # from dustfilaments
+        l0_d_bb : 80.
+        beta_d: 1.59 # modified BB emission 1409.5738
+        temp_d: 19.6 # modified BB emission 1409.5738
+        nu0_d: 353.
+        decorr_amp_d : 1.0
+        decorr_nu01_d : 353.
+        decorr_nu02_d : 217.
+
+    sync:
+
+        amp_s_bb : 1.28 #2.0
+        alpha_s_bb : -0.82 # -0.6 # -0.4
+        l0_s_bb : 80.
+        beta_s : -3.
+        nu0_s : 23.
+        decorr_amp_s: 1.0
+        decorr_nu01_s: 40.
+        decorr_nu02_s: 23.
+
+
+    model:
+        lnorm_PL: 80.        # PL param 1801.04945
+        epsilon_ds : 0.
+
+paths:
+    bbpower: '/global/cfs/cdirs/act/software/iabril/condaenvs/github_reps/BBPower/'
+    output: '/global/cfs/cdirs/act/data/iabril/newr/cells_models/'
+
+bandpowers:
+    lmin: 2
+    dell: 5
+    nbands: 100
+
+global:
+    nside: 256
+    experiment: 'lbrd' # 'so' #
+    polarization: 'B'
+
+band_names:
+    S4_SAT: ['30', '40', '85', '95','145', '155', '220', '270']
+    SO: ['LF1', 'LF2', 'MF1', 'MF2', 'UHF1', 'UHF2']
+    lbrd: ['40', '50', '60', '68', '78', '89','100', '119','140','166','195','235','280','337','402'] # https://arxiv.org/pdf/2101.12449.pdf
