@@ -47,16 +47,6 @@ class EllConfig:
         self.lmax_psi = param['lmax_psi']
         self.lmin_psi = param['lmin_psi']
 
-class ConstantsConfig:
-
-    '''
-    2nd level class of config file
-    contains value of physical constants
-    '''
-
-    def __init__(self, param):
-        self.Tcmb = param['Tcmb']
-
 class ForegroundConfig:
 
     '''
@@ -68,6 +58,16 @@ class ForegroundConfig:
         self.mask = param['mask']
         self.dust = param['dust']
 
+class ReconsConfig:
+
+    '''
+    2nd level class of config file
+    contains foreground especifications
+    '''
+
+    def __init__(self, param):
+        self.phi = param['phi']
+        self.psi = param['psi']
 
 
 class Config:
@@ -80,8 +80,8 @@ class Config:
         self.global_param = GlobalConfig(param['global'])
         self.delens_param = DelensConfig(param['delens'])
         self.ell_param    = EllConfig(param['ell'])
-        self.constants    = ConstantsConfig(param['constants'])
         self.foreground   = ForegroundConfig(param['foreground'])
+        self.recons       = ReconsConfig(param['reconstruction'])
 
 with open('./QEfgs/config.yml', 'r', encoding = 'utf-8') as config_file:
     config = Config(yaml.load(config_file, yaml.FullLoader))
@@ -89,14 +89,17 @@ with open('./QEfgs/config.yml', 'r', encoding = 'utf-8') as config_file:
 global_params    = config.global_param
 delens_params    = config.delens_param
 ell_params       = config.ell_param
-constants        = config.constants
 foreground       = config.foreground
+recons           = config.recons
 
 R         = global_params.r
 NSIDE     = global_params.nside
 LMAX      = global_params.Lmax
 COORD_OUT = global_params.coord_out
 OUTPUT_PATH = global_params.out_path
+
+RECONS_PSI = recons.psi
+RECONS_PHI = recons.phi
 
 ALPHA_PHI = delens_params.alpha_phi
 ALPHA_PSI = delens_params.alpha_psi
@@ -110,8 +113,6 @@ LMIN_PHI = ell_params.lmin_phi
 
 LMAX_PSI = ell_params.lmax_psi
 LMIN_PSI = ell_params.lmin_psi
-
-TCMB = float(constants.Tcmb)
 
 MASK = foreground.mask
 DUST = foreground.dust
@@ -133,6 +134,8 @@ else:
 
 FOOTPRINT_TYPES = ['so']
 DUST_TYPES      = ['DF', 'van', 'pysm']
+RECONS_PHI_TYPES = ['EB']
+RECONS_PSI_TYPES = ['BB']
 
 SO_FOOTPRINT_PATH = '/global/cfs/cdirs/act/data/iabril/SO/mask_apodized_david_nside512.fits'
 
@@ -147,6 +150,8 @@ assert LMAX > LMAX_PSI, 'global Lmax is less than Lmax_psi'
 
 assert FOOTPRINT in FOOTPRINT_TYPES, 'undefined footprint'
 assert DUST_TYPE in DUST_TYPES, 'undefined dust foreground'
+assert RECONS_PHI in RECONS_PHI_TYPES, 'that phi reconstruction is not implemented'
+assert RECONS_PSI in RECONS_PSI_TYPES, 'that psi reconstruction is not implemented'
 
 if FOOTPRINT == 'so':
     assert FOOTPRINT_PATH == SO_FOOTPRINT_PATH
