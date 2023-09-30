@@ -8,11 +8,15 @@ import pymaster as nmt
 import pysm3
 import pysm3.units as u
 import curvedsky as cs
+import cmb
 from QEfgs.utils.params import DUST_PATH, COORD_DUST, DUST_TYPE, DUST_SUBTYPE
-from QEfgs.utils.params import NSIDE, TCMB, COORD_OUT, LMAX, DUST_FREQ
+from QEfgs.utils.params import NSIDE, COORD_OUT, LMAX, DUST_FREQ
 from QEfgs.utils.params import FOOTPRINT_PATH, COORD_MASK, FOOTPRINT, APO_DEG
 from QEfgs.utils.params import OUTPUT_PATH, NAME_RUN
+from QEfgs.utils.params import LMAX_PHI, LMAX_PSI
 
+# constants
+TCMB = cmb.Tcmb
 
 def hp_rotate(map_hp, coord):
     """Rotate healpix map between coordinate systems
@@ -86,33 +90,60 @@ def almEB_maskdust_raw():
     measures a_lm polarizaiton coefficients of masked dust map
     '''
 
-    dustQ, dustU = read_dustmap()[1:]
+    dustT, dustQ, dustU = read_dustmap()
 
     mask = read_mask()[0]
-
+    
+    dustT_mask = dustT * mask
     dustQ_mask = dustQ * mask
     dustU_mask = dustU * mask
 
+    almT = cs.utils.hp_map2alm(NSIDE, LMAX, mmax = LMAX, map = dustT_mask)
     almE, almB = cs.utils.hp_map2alm_spin( NSIDE, LMAX, mmax = LMAX, spin=2, \
                                           map0 = dustQ_mask, map1 = dustU_mask)
 
-    return almE, almB
+    return almT, almE, almB
 
 def cellfromalm_mask():
     '''
     measures power spectra from alms. corrects for mask with w2 factor
     '''
-    almE, almB = almEB_maskdust_raw()
+    almT, almE, almB = almEB_maskdust_raw()
     w2factor = read_mask()[1]
 
+    cl_TT = cs.utils.alm2cl(LMAX, almT, almT)
     cl_EE = cs.utils.alm2cl(LMAX, almE, almE)
     cl_EB = cs.utils.alm2cl(LMAX, almE, almB)
     cl_BB = cs.utils.alm2cl(LMAX, almB, almB)
     # w2 correction
+    cl_TT /= w2factor
     cl_EE /= w2factor
     cl_EB /= w2factor
     cl_BB /= w2factor
 
+    np.savetxt(OUTPUT_PATH + NAME_RUN + '_cl_TT.txt', cl_TT)
     np.savetxt(OUTPUT_PATH + NAME_RUN + '_cl_EE.txt', cl_EE)
     np.savetxt(OUTPUT_PATH + NAME_RUN + '_cl_EB.txt', cl_EB)
     np.savetxt(OUTPUT_PATH + NAME_RUN + '_cl_BB.txt', cl_BB)
+
+def almEB_maskdust_raw_ellrange():
+
+    '''
+    returns needed alms for reconstruction in the required ell range
+    '''
+
+    almT, almE, almB = almEB_maskdust_raw()
+
+    # phi:
+    Tlm_phi = almT[:LMAX_PHI+1, :LMAX_PHI+1]
+    Elm_phi = almE[:LMAX_PHI+1, :LMAX_PHI+1]
+    Blm_phi = almB[:LMAX_PHI+1, :LMAX_PHI+1]
+    # psi
+    Tlm_psi = almT[:LMAX_PSI+1, :LMAX_PSI+1]
+    Elm_psi = almE[:LMAX_PSI+1, :LMAX_PSI+1]
+    Blm_psi = almB[:LMAX_PSI+1, :LMAX_PSI+1]
+
+    return {'phi': {'TT' :Tlm_phi, 'EE': Elm_phi, 'BB': Blm_phi},\
+             'psi': {'TT': Tlm_psi, 'EE': Elm_psi, 'BB': Blm_psi}}
+
+
