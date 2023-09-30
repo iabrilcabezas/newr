@@ -22,8 +22,9 @@ ell:
     lmax_psi: 200
     lmin_psi: 30
 
-constants:
-    Tcmb: 2.7255e6
+reconstruction:
+    psi: 'BB'
+    phi: 'EB'
 
 foreground:
     mask:
