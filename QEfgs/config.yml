@@ -1,0 +1,38 @@
+
+global:
+    r: 1e-2
+    nside: 1024
+    Lmax: 3050
+    coord_out: 'G'
+    output_path: '/pscratch/sd/i/iabril/data/newr/fgs_cell/'
+
+  
+delens:
+    alpha_phi: 0.
+    alpha_psi: 0.7
+
+ell:
+    lmax_out: 300
+    lmin_out: 0
+    dell_out: 20
+
+    lmax_phi: 3000
+    lmin_phi: 300
+
+    lmax_psi: 200
+    lmin_psi: 30
+
+constants:
+    Tcmb: 2.7255e6
+
+foreground:
+    mask:
+        footprint: 'so'
+        footprint_path: '/global/cfs/cdirs/act/data/iabril/SO/mask_apodized_david_nside512.fits'
+        coord: 'C'
+        apo_deg: 5.0
+    dust:
+        type: 'pysm_d1' # 'van' 'pysm_d1' 'DF'
+        coord: 'G'
+        freq: 90 # '150'
+        path: '/pscratch/sd/i/iabril/data/'
