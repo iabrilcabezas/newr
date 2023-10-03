@@ -4,7 +4,7 @@ global:
     nside: 1024
     Lmax: 3050
     coord_out: 'G'
-    output_path: '/pscratch/sd/i/iabril/data/newr/fgs_cell/'
+    output_path: '/pscratch/sd/i/iabril/data/newr/'
 
   
 delens:
@@ -26,6 +26,9 @@ reconstruction:
     psi: 'BB'
     phi: 'EB'
 
+cmb:
+    seed: 0
+
 foreground:
     mask:
         footprint: 'so'
@@ -33,7 +36,8 @@ foreground:
         coord: 'C'
         apo_deg: 5.0
     dust:
-        type: 'pysm_d1' # 'van' 'pysm_d1' 'DF'
+        # {'van': [90], 'pysm_d1': [all], 'DF': [95]}
+        type: 'DF' # 'van' 'pysm_d1' 'DF'
         coord: 'G'
-        freq: 90 # '150'
+        freq: 95 # '150'
         path: '/pscratch/sd/i/iabril/data/'

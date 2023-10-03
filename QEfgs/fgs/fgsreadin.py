@@ -2,6 +2,7 @@
 fgsreadin.py
     reads-in foregrounds
 '''
+
 import numpy as np
 import healpy as hp
 import pymaster as nmt
@@ -9,6 +10,7 @@ import pysm3
 import pysm3.units as u
 import curvedsky as cs
 import cmb
+#from QEfgs.utils.write import read_complex, write_complex
 from QEfgs.utils.params import DUST_PATH, COORD_DUST, DUST_TYPE, DUST_SUBTYPE
 from QEfgs.utils.params import NSIDE, COORD_OUT, LMAX, DUST_FREQ
 from QEfgs.utils.params import FOOTPRINT_PATH, COORD_MASK, FOOTPRINT, APO_DEG
@@ -17,6 +19,8 @@ from QEfgs.utils.params import LMAX_PHI, LMAX_PSI
 
 # constants
 TCMB = cmb.Tcmb
+
+base_name = 'fgs/' + NAME_RUN
 
 def hp_rotate(map_hp, coord):
     """Rotate healpix map between coordinate systems
@@ -93,7 +97,7 @@ def almEB_maskdust_raw():
     dustT, dustQ, dustU = read_dustmap()
 
     mask = read_mask()[0]
-    
+
     dustT_mask = dustT * mask
     dustQ_mask = dustQ * mask
     dustU_mask = dustU * mask
@@ -121,10 +125,25 @@ def cellfromalm_mask():
     cl_EB /= w2factor
     cl_BB /= w2factor
 
-    np.savetxt(OUTPUT_PATH + NAME_RUN + '_cl_TT.txt', cl_TT)
-    np.savetxt(OUTPUT_PATH + NAME_RUN + '_cl_EE.txt', cl_EE)
-    np.savetxt(OUTPUT_PATH + NAME_RUN + '_cl_EB.txt', cl_EB)
-    np.savetxt(OUTPUT_PATH + NAME_RUN + '_cl_BB.txt', cl_BB)
+    np.savetxt(OUTPUT_PATH + base_name + '_cl_TT.txt', cl_TT)
+    np.savetxt(OUTPUT_PATH + base_name + '_cl_EE.txt', cl_EE)
+    np.savetxt(OUTPUT_PATH + base_name + '_cl_EB.txt', cl_EB)
+    np.savetxt(OUTPUT_PATH + base_name + '_cl_BB.txt', cl_BB)
+
+def get_EBlm_write():
+    '''
+    computes and writes foreground alms
+    '''
+
+    almT, almE, almB = almEB_maskdust_raw()
+    # save it:
+    # write_complex(f'{base_name}_almT', almT)
+    # write_complex(f'{base_name}_almE', almE)
+    # write_complex(f'{base_name}_almB', almB)
+    np.save(f'{OUTPUT_PATH}{base_name}_almT', almT)
+    np.save(f'{OUTPUT_PATH}{base_name}_almE', almE)
+    np.save(f'{OUTPUT_PATH}{base_name}_almB', almB)
+
 
 def almEB_maskdust_raw_ellrange():
 
@@ -132,7 +151,12 @@ def almEB_maskdust_raw_ellrange():
     returns needed alms for reconstruction in the required ell range
     '''
 
-    almT, almE, almB = almEB_maskdust_raw()
+    # almT = read_complex(f'{base_name}_almT')
+    # almE = read_complex(f'{base_name}_almE')
+    # almB = read_complex(f'{base_name}_almB')
+    almT = np.load(f'{OUTPUT_PATH}{base_name}_almT')
+    almE = np.load(f'{OUTPUT_PATH}{base_name}_almE')
+    almB = np.load(f'{OUTPUT_PATH}{base_name}_almB')
 
     # phi:
     Tlm_phi = almT[:LMAX_PHI+1, :LMAX_PHI+1]
@@ -143,7 +167,5 @@ def almEB_maskdust_raw_ellrange():
     Elm_psi = almE[:LMAX_PSI+1, :LMAX_PSI+1]
     Blm_psi = almB[:LMAX_PSI+1, :LMAX_PSI+1]
 
-    return {'phi': {'TT' :Tlm_phi, 'EE': Elm_phi, 'BB': Blm_phi},\
-             'psi': {'TT': Tlm_psi, 'EE': Elm_psi, 'BB': Blm_psi}}
-
-
+    return {'phi': {'T' :Tlm_phi, 'E': Elm_phi, 'B': Blm_phi},\
+             'psi': {'T': Tlm_psi, 'E': Elm_psi, 'B': Blm_psi}}

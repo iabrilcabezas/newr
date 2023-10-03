@@ -2,11 +2,15 @@
 theory_cell
     functions from theory
 '''
+
 import numpy as np
 import camb
 import cmb
-from QEfgs.utils.params import LMAX
-from QEfgs.utils.params import ALPHA_PHI, ALPHA_PSI, R
+import curvedsky as cs
+# from QEfgs.utils.write import write_complex, read_complex
+from QEfgs.utils.params import LMAX, NSIDE, BASE_NAME_THEO
+from QEfgs.utils.params import ALPHA_PHI, ALPHA_PSI, R, OUTPUT_PATH
+from QEfgs.utils.params import RECONS_PHI, RECONS_PSI, LMAX_PSI, LMAX_PHI
 
 def prepare_cls(lmax=4000,Alens=1.):
 
@@ -86,3 +90,95 @@ def get_observed_spectrum():
     ocl_psi = R*rcl + lcl*alens_psi
 
     return {'phi': ocl_phi, 'psi': ocl_psi}
+
+def simulate_cmbalms_theory():
+    '''
+    draws alm randomly from power spectrum. scalar (unlensed) and tensor modes
+    and lensing spectrum
+    '''
+
+    ucl, _, rcl = theory_camb()
+    print('simulating alm cmb from random')
+    sTlm, sElm = cs.utils.gauss2alm(LMAX,ucl[0,:],ucl[1,:],ucl[2,:])
+    rElm = cs.utils.gauss1alm(LMAX,R*rcl[1,:])
+    rBlm = cs.utils.gauss1alm(LMAX,R*rcl[2,:])
+
+    # this is random too:
+    palm = cs.utils.gauss1alm(LMAX,ucl[3,:])
+
+    return sTlm, sElm, rElm, rBlm, palm
+
+def simulate_lensing_theory():
+
+    '''
+    simulates lensing field for generated phi field
+
+    returns:
+        lensing field alm (palm)
+        lensing produced by scalar E modes (measures B leakage)
+        lensing produced by primordial scalar + tensor E modes, and tensor B modes
+    '''
+
+    _, sElm, rElm, rBlm, palm = simulate_cmbalms_theory()
+
+    grad = cs.delens.phi2grad(NSIDE, LMAX, palm)
+
+    _, lElm, lBlm = cs.delens.remap_tp(NSIDE, LMAX, grad, np.array((0*sElm,sElm+rElm,rBlm)))[:,:LMAX+1]
+    _, lelm, lblm = cs.delens.remap_tp(NSIDE, LMAX, grad, np.array((0*sElm,sElm,0*sElm)))[:,:LMAX+1]
+
+    return lElm, lelm, lBlm, lblm, palm
+
+def get_EBlm_plm_theo():
+
+    '''
+    generates EBlm, plm and writes to file
+    '''
+    lElm, lelm, lBlm, lblm, palm = simulate_lensing_theory()
+    # save it:
+    # write_complex(f'{BASE_NAME_THEO}_palm', palm)
+    # write_complex(f'{BASE_NAME_THEO}_lElm', lElm)
+    # write_complex(f'{BASE_NAME_THEO}_lelm', lelm)
+    # write_complex(f'{BASE_NAME_THEO}_lBlm', lBlm)
+    # write_complex(f'{BASE_NAME_THEO}_lblm', lblm)
+
+    np.save(f'{OUTPUT_PATH}{BASE_NAME_THEO}_palm', palm)
+    np.save(f'{OUTPUT_PATH}{BASE_NAME_THEO}_lElm', lElm)
+    np.save(f'{OUTPUT_PATH}{BASE_NAME_THEO}_lelm', lelm)
+    np.save(f'{OUTPUT_PATH}{BASE_NAME_THEO}_lBlm', lBlm)
+    np.save(f'{OUTPUT_PATH}{BASE_NAME_THEO}_lblm', lblm)
+
+
+
+def get_EBlm_plm_theo_dellrange():
+
+    '''
+    performs delensing and selects ell range for reconstruction
+    '''
+
+    return_data = {}
+    if RECONS_PHI == 'EB':
+        # lElm = read_complex(f'{BASE_NAME_THEO}_lElm')
+        # lBlm = read_complex(f'{BASE_NAME_THEO}_lBlm')
+        # lelm = read_complex(f'{BASE_NAME_THEO}_lelm')
+        # lblm = read_complex(f'{BASE_NAME_THEO}_lblm')
+        lElm = np.load(f'{OUTPUT_PATH}{BASE_NAME_THEO}_lElm')
+        lBlm = np.load(f'{OUTPUT_PATH}{BASE_NAME_THEO}_lBlm')
+        lelm = np.load(f'{OUTPUT_PATH}{BASE_NAME_THEO}_lelm')
+        lblm = np.load(f'{OUTPUT_PATH}{BASE_NAME_THEO}_lblm')
+
+        Elm_phi = (lElm-ALPHA_PHI*lelm)[:LMAX_PHI+1,:LMAX_PHI+1]
+        Blm_phi = (lBlm-ALPHA_PHI*lblm)[:LMAX_PHI+1,:LMAX_PHI+1]
+
+        return_data['phi'] = {'E': Elm_phi, 'B': Blm_phi}
+
+    if RECONS_PSI == 'BB':
+        # lBlm = read_complex(f'{BASE_NAME_THEO}_lBlm')
+        # lblm = read_complex(f'{BASE_NAME_THEO}_lblm')
+        lBlm = np.load(f'{OUTPUT_PATH}{BASE_NAME_THEO}_lBlm')
+        lblm = np.load(f'{OUTPUT_PATH}{BASE_NAME_THEO}_lblm')
+
+        Blm_psi = (lBlm-ALPHA_PSI*lblm)[:LMAX_PSI+1,:LMAX_PSI+1]
+
+        return_data['psi'] = {'B':Blm_psi}
+
+    return return_data

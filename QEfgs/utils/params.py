@@ -58,6 +58,17 @@ class ForegroundConfig:
         self.mask = param['mask']
         self.dust = param['dust']
 
+class CMBConfig:
+
+    '''
+    2nd level class of config file
+    contains foreground especifications
+    '''
+
+    def __init__(self, param):
+        self.seed = param['seed']
+
+
 class ReconsConfig:
 
     '''
@@ -81,6 +92,7 @@ class Config:
         self.delens_param = DelensConfig(param['delens'])
         self.ell_param    = EllConfig(param['ell'])
         self.foreground   = ForegroundConfig(param['foreground'])
+        self.cmb          = CMBConfig(param['cmb'])
         self.recons       = ReconsConfig(param['reconstruction'])
 
 with open('./QEfgs/config.yml', 'r', encoding = 'utf-8') as config_file:
@@ -90,32 +102,35 @@ global_params    = config.global_param
 delens_params    = config.delens_param
 ell_params       = config.ell_param
 foreground       = config.foreground
+cmb_params       = config.cmb
 recons           = config.recons
 
-R         = global_params.r
-NSIDE     = global_params.nside
-LMAX      = global_params.Lmax
-COORD_OUT = global_params.coord_out
+R           = float(global_params.r)
+NSIDE       = global_params.nside
+LMAX        = global_params.Lmax
+COORD_OUT   = global_params.coord_out
 OUTPUT_PATH = global_params.out_path
 
-RECONS_PSI = recons.psi
-RECONS_PHI = recons.phi
+CMB_SEED    = cmb_params.seed
 
-ALPHA_PHI = delens_params.alpha_phi
-ALPHA_PSI = delens_params.alpha_psi
+RECONS_PSI  = recons.psi
+RECONS_PHI  = recons.phi
 
-LMAX_OUT = ell_params.lmax_out
-LMIN_OUT = ell_params.lmin_out
-DELL_OUT = ell_params.dell_out
+ALPHA_PHI   = delens_params.alpha_phi
+ALPHA_PSI   = delens_params.alpha_psi
 
-LMAX_PHI = ell_params.lmax_phi
-LMIN_PHI = ell_params.lmin_phi
+LMAX_OUT    = ell_params.lmax_out
+LMIN_OUT    = ell_params.lmin_out
+DELL_OUT    = ell_params.dell_out
 
-LMAX_PSI = ell_params.lmax_psi
-LMIN_PSI = ell_params.lmin_psi
+LMAX_PHI    = ell_params.lmax_phi
+LMIN_PHI    = ell_params.lmin_phi
 
-MASK = foreground.mask
-DUST = foreground.dust
+LMAX_PSI    = ell_params.lmax_psi
+LMIN_PSI    = ell_params.lmin_psi
+
+MASK        = foreground.mask
+DUST        = foreground.dust
 
 FOOTPRINT      = MASK['footprint']
 FOOTPRINT_PATH = MASK['footprint_path']
@@ -171,4 +186,5 @@ elif DUST_TYPE == 'van':
 elif DUST_TYPE == 'pysm':
     DUST_PATH = 'NA'
 
-NAME_RUN = f'{LMAX}_{FOOTPRINT}_{DUST_TYPE}_{DUST_SUBTYPE}_{int(DUST_FREQ)}'
+NAME_RUN  = f'{LMAX}_{FOOTPRINT}_{DUST_TYPE}_{DUST_SUBTYPE}_{int(DUST_FREQ)}'
+BASE_NAME_THEO = f'cmb/{int(CMB_SEED):03}'

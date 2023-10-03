@@ -5,10 +5,11 @@ qe.py
 
 import numpy as np
 import curvedsky as cs
-from QEfgs.theory.theory_cell import get_observed_spectrum, theory_camb
+from QEfgs.theory.theory_cell import get_observed_spectrum, theory_camb, get_EBlm_plm_theo_dellrange
 from QEfgs.fgs.fgsreadin import almEB_maskdust_raw_ellrange
+# from QEfgs.utils.write import read_complex
 from QEfgs.utils.params import LMAX_OUT, LMIN_PHI, LMAX_PHI, LMIN_PSI, LMAX_PSI
-from QEfgs.utils.params import NSIDE, RECONS_PSI, RECONS_PHI
+from QEfgs.utils.params import NSIDE, RECONS_PSI, RECONS_PHI, BASE_NAME_THEO, OUTPUT_PATH
 
 # filtering
 
@@ -37,15 +38,16 @@ def get_Fl_psi():
 
     Fl_psi = np.zeros((3, LMAX_PSI+1, LMAX_PSI + 1)) # (T, E, B)
     for l in range(LMIN_PSI, LMAX_PSI+1):
-        Fl_psi[l,:l+1] = 1./ocl_psi[:3, l, None] # TT, EE, BB
+        Fl_psi[:, l,:l+1] = 1./ocl_psi[:3, l, None] # TT, EE, BB
 
     return Fl_psi
 
-def get_upsi():
+def get_upsi(recons_data):
 
     '''
     reconstruct psi (unnormalized)
     rec_lens.qbb(BB spectrum, inverse-variance filtered B-mode alm)
+    recons_data alms
     '''
 
     # filtering
@@ -53,7 +55,7 @@ def get_upsi():
 
     if RECONS_PSI == 'BB':
 
-        Blm = almEB_maskdust_raw_ellrange()['psi']['BB'] # (psi, BB) component
+        Blm = recons_data['psi']['B'] # (psi, BB) component
         fBlm   = Blm * Fl_psi[2, :, :] ## BB component
 
         rcl = theory_camb()[-1] # tensor output
@@ -63,19 +65,21 @@ def get_upsi():
 
     return None
 
-def get_uphi():
+def get_uphi(recons_data):
 
     '''
     reconstruct phi (unnormalized)
     rec_lens.qeb(EE spectrum, inverse-variance filtered E-mode alm, inverse B)
+
+    recons_data alms
     '''
 
     Fl_phi = get_Fl_phi()
 
     if RECONS_PHI == 'EB':
 
-        Elm = almEB_maskdust_raw_ellrange()['phi']['EE']
-        Blm = almEB_maskdust_raw_ellrange()['phi']['BB']
+        Elm = recons_data['phi']['E']
+        Blm = recons_data['phi']['B']
 
         fElm = Elm * Fl_phi[1,:,:] # EE
         fBlm = Blm * Fl_phi[2,:,:] # BB
@@ -127,23 +131,83 @@ def norm_phi():
 
     return None
 
-def get_rphi():
+def get_rphi(recons_data):
 
     '''
     reconstruct phi = norm * QE
     '''
     A = norm_phi()
-    phi = get_uphi()
+    phi = get_uphi(recons_data)
 
     return A[:LMAX_OUT+1, None] * phi
 
-def get_rpsi():
+def get_rpsi(recons_data):
 
     '''
     reconstruct psi = norm * QE
     '''
 
     A = norm_psi()
-    psi = get_upsi()
+    psi = get_upsi(recons_data)
 
     return A[:LMAX_OUT+1, None] * psi
+
+def reconstruct_on(recons_type):
+
+    '''
+    define which alms are being used for reconstruction
+    recons_type ['dust', 'cmb']
+    '''
+
+    if recons_type == 'dust':
+        reconstruct_alms = almEB_maskdust_raw_ellrange()
+    elif recons_type == 'cmb':
+        reconstruct_alms = get_EBlm_plm_theo_dellrange()
+    else:
+        return None
+    return reconstruct_alms
+
+def rec_psipsi(recons_data):
+
+    '''
+    reconstruct psi and obtain psi x psi cell
+    '''
+
+    psilm = get_rpsi(recons_data)
+    gg = cs.utils.alm2cl(LMAX_OUT, psilm)
+
+    return psilm, gg
+
+def rec_phiphi(recons_data):
+    '''
+    reconstruct phi and obtain phi x phi cell
+    '''
+    philm = get_rphi(recons_data)
+    pp_recon = cs.utils.alm2cl(LMAX_OUT, philm)
+
+    return philm, pp_recon
+
+def recpsi_theory(recons_data):
+
+    '''
+    reconstruct psi and obtain psi x phi theory cell
+    '''
+    psilm = rec_psipsi(recons_data)[0]
+    # palm = read_complex(f'{BASE_NAME_THEO}_palm')
+    palm = np.load(f'{OUTPUT_PATH}{BASE_NAME_THEO}_palm')
+    gp_theo = cs.utils.alm2cl(LMAX_OUT,psilm,palm[:LMAX_OUT+1,:LMAX_OUT+1])
+
+    return gp_theo
+
+def recphi_theory(recons_data):
+
+    '''
+    reconstruct phi and obtain psi x phi theory cell
+    '''
+
+    philm = rec_phiphi(recons_data)[0]
+    # palm = read_complex(f'{BASE_NAME_THEO}_palm')
+    palm = np.load(f'{OUTPUT_PATH}{BASE_NAME_THEO}_palm')
+    pg_ptheo = cs.utils.alm2cl(LMAX_OUT, philm, palm[:LMAX_OUT+1,:LMAX_OUT+1])
+
+    return pg_ptheo
