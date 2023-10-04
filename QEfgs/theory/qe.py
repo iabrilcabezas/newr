@@ -194,7 +194,7 @@ def recpsi_theory(recons_data):
     '''
     psilm = rec_psipsi(recons_data)[0]
     # palm = read_complex(f'{BASE_NAME_THEO}_palm')
-    palm = np.load(f'{OUTPUT_PATH}{BASE_NAME_THEO}_palm')
+    palm = np.load(f'{OUTPUT_PATH}{BASE_NAME_THEO}_palm.npy')
     gp_theo = cs.utils.alm2cl(LMAX_OUT,psilm,palm[:LMAX_OUT+1,:LMAX_OUT+1])
 
     return gp_theo
@@ -207,7 +207,7 @@ def recphi_theory(recons_data):
 
     philm = rec_phiphi(recons_data)[0]
     # palm = read_complex(f'{BASE_NAME_THEO}_palm')
-    palm = np.load(f'{OUTPUT_PATH}{BASE_NAME_THEO}_palm')
+    palm = np.load(f'{OUTPUT_PATH}{BASE_NAME_THEO}_palm.npy')
     pg_ptheo = cs.utils.alm2cl(LMAX_OUT, philm, palm[:LMAX_OUT+1,:LMAX_OUT+1])
 
     return pg_ptheo
