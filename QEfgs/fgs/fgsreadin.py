@@ -154,9 +154,9 @@ def almEB_maskdust_raw_ellrange():
     # almT = read_complex(f'{base_name}_almT')
     # almE = read_complex(f'{base_name}_almE')
     # almB = read_complex(f'{base_name}_almB')
-    almT = np.load(f'{OUTPUT_PATH}{base_name}_almT')
-    almE = np.load(f'{OUTPUT_PATH}{base_name}_almE')
-    almB = np.load(f'{OUTPUT_PATH}{base_name}_almB')
+    almT = np.load(f'{OUTPUT_PATH}{base_name}_almT.npy')
+    almE = np.load(f'{OUTPUT_PATH}{base_name}_almE.npy')
+    almB = np.load(f'{OUTPUT_PATH}{base_name}_almB.npy')
 
     # phi:
     Tlm_phi = almT[:LMAX_PHI+1, :LMAX_PHI+1]
