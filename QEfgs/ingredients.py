@@ -2,10 +2,11 @@
 once palm, theory is measured, and alm maps too: reconstruct
 '''
 import numpy as np
+import curvedsky as cs
 from QEfgs.theory.qe import reconstruct_on
 from QEfgs.theory.qe import rec_psipsi, rec_phiphi, recphi_theory, recpsi_theory
 # from QEfgs.utils.write import write_cell, write_complex
-from QEfgs.utils.params import NAME_RUN, CMB_SEED, OUTPUT_PATH
+from QEfgs.utils.params import NAME_RUN, CMB_SEED, OUTPUT_PATH, LMAX_OUT
 
 def run_reconstruction(recons_data, name):
 
@@ -17,6 +18,8 @@ def run_reconstruction(recons_data, name):
     psilm, gg       = rec_psipsi(recons_data)
     gp_theo         = recpsi_theory(recons_data)
     pg_theo         = recphi_theory(recons_data)
+
+    phipsi_recon    = cs.utils.alm2cl(LMAX_OUT,psilm,philm)
 
     # write_complex(f'{name}_philm', philm)
     # write_complex(f'{name}_psilm', psilm)
@@ -30,12 +33,13 @@ def run_reconstruction(recons_data, name):
     np.save(f'{OUTPUT_PATH}{name}_pp_recon', pp_recon)
     np.save(f'{OUTPUT_PATH}{name}_gp_theo', gp_theo)
     np.save(f'{OUTPUT_PATH}{name}_pg_theo', pg_theo)
+    np.save(f'{OUTPUT_PATH}{name}_gp_recon', phipsi_recon)
+
+
+# cmb_data  = reconstruct_on('cmb')
+# cmb_name = f'recons/cmb_{int(CMB_SEED):03}'
+# run_reconstruction(cmb_data, cmb_name)
 
 dust_data = reconstruct_on('dust')
-cmb_data  = reconstruct_on('cmb')
-
-cmb_name = f'recons/cmb_{int(CMB_SEED):03}'
 dust_name = f'recons/dust_{NAME_RUN}'
-
 run_reconstruction(dust_data, dust_name)
-run_reconstruction(cmb_data, cmb_name)
