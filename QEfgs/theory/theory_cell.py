@@ -141,6 +141,10 @@ def get_EBlm_plm_theo():
     # write_complex(f'{BASE_NAME_THEO}_lBlm', lBlm)
     # write_complex(f'{BASE_NAME_THEO}_lblm', lblm)
 
+    # phiphi theory
+    pp_theory = cs.utils.alm2cl(LMAX,palm)
+
+    np.save(f'{OUTPUT_PATH}{BASE_NAME_THEO}_pp_theory', pp_theory)
     np.save(f'{OUTPUT_PATH}{BASE_NAME_THEO}_palm', palm)
     np.save(f'{OUTPUT_PATH}{BASE_NAME_THEO}_lElm', lElm)
     np.save(f'{OUTPUT_PATH}{BASE_NAME_THEO}_lelm', lelm)
@@ -161,10 +165,10 @@ def get_EBlm_plm_theo_dellrange():
         # lBlm = read_complex(f'{BASE_NAME_THEO}_lBlm')
         # lelm = read_complex(f'{BASE_NAME_THEO}_lelm')
         # lblm = read_complex(f'{BASE_NAME_THEO}_lblm')
-        lElm = np.load(f'{OUTPUT_PATH}{BASE_NAME_THEO}_lElm')
-        lBlm = np.load(f'{OUTPUT_PATH}{BASE_NAME_THEO}_lBlm')
-        lelm = np.load(f'{OUTPUT_PATH}{BASE_NAME_THEO}_lelm')
-        lblm = np.load(f'{OUTPUT_PATH}{BASE_NAME_THEO}_lblm')
+        lElm = np.load(f'{OUTPUT_PATH}{BASE_NAME_THEO}_lElm.npy')
+        lBlm = np.load(f'{OUTPUT_PATH}{BASE_NAME_THEO}_lBlm.npy')
+        lelm = np.load(f'{OUTPUT_PATH}{BASE_NAME_THEO}_lelm.npy')
+        lblm = np.load(f'{OUTPUT_PATH}{BASE_NAME_THEO}_lblm.npy')
 
         Elm_phi = (lElm-ALPHA_PHI*lelm)[:LMAX_PHI+1,:LMAX_PHI+1]
         Blm_phi = (lBlm-ALPHA_PHI*lblm)[:LMAX_PHI+1,:LMAX_PHI+1]
@@ -174,8 +178,8 @@ def get_EBlm_plm_theo_dellrange():
     if RECONS_PSI == 'BB':
         # lBlm = read_complex(f'{BASE_NAME_THEO}_lBlm')
         # lblm = read_complex(f'{BASE_NAME_THEO}_lblm')
-        lBlm = np.load(f'{OUTPUT_PATH}{BASE_NAME_THEO}_lBlm')
-        lblm = np.load(f'{OUTPUT_PATH}{BASE_NAME_THEO}_lblm')
+        lBlm = np.load(f'{OUTPUT_PATH}{BASE_NAME_THEO}_lBlm.npy')
+        lblm = np.load(f'{OUTPUT_PATH}{BASE_NAME_THEO}_lblm.npy')
 
         Blm_psi = (lBlm-ALPHA_PSI*lblm)[:LMAX_PSI+1,:LMAX_PSI+1]
 
