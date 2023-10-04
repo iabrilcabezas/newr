@@ -1,7 +1,7 @@
 '''
 theory cell
 '''
-import numpy as np
+# import numpy as np
 from QEfgs.theory.theory_cell import get_EBlm_plm_theo #,simulate_cmbalms_theory
 
 get_EBlm_plm_theo()
