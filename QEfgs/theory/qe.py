@@ -70,7 +70,7 @@ def get_uphi(recons_data):
     '''
     reconstruct phi (unnormalized)
     rec_lens.qeb(EE spectrum, inverse-variance filtered E-mode alm, inverse B)
-
+    rec_lens.qtt(TT spectrum, inverse-variance filtered T-mode alm, ")
     recons_data alms
     '''
 
@@ -90,6 +90,19 @@ def get_uphi(recons_data):
                                   fElm, fBlm, nside_t = NSIDE)[0]
 
         return phi_qeb
+    
+    if RECONS_PHI == 'TT':
+
+        Tlm = recons_data['phi']['T']
+
+        fTlm = Tlm * Fl_phi[0,:,:] # TT
+
+        lcl = theory_camb()[1] # lensed cl output
+        
+        # grad component
+        phi_qtt = cs.rec_lens.qtt(LMAX_OUT, LMIN_PHI, LMAX_PHI, lcl[0,:LMAX_PHI+1],fTlm,fTlm,nside_t=NSIDE)[0]
+
+        return phi_qtt
 
     return None
 
@@ -117,6 +130,7 @@ def norm_phi():
     normalization QE for psi
     norm_quad.qeb(theory EE spectrum, observed EE spectrum, observed BB spectrum)
         ignore theory BB spectrum as it is much smaller than EE
+    norm_quad.qtt(theory TT spectrum, observed TT spectrum)
     '''
 
     ocl_phi = get_observed_spectrum()['phi']
@@ -128,6 +142,15 @@ def norm_phi():
                                     ocl_phi[1,:LMAX_PHI + 1], ocl_phi[2,:LMAX_PHI+1])[0]
 
         return Aglm_eb
+    
+    if RECONS_PHI == 'TT':
+
+        lcl, _ = theory_camb()[1:]
+
+        Aglm_tt = cs.norm_quad.qtt('lens',LMAX_OUT, LMIN_PHI, LMAX_PHI, lcl[0,:LMAX_PHI+1], ocl_phi[0,:LMAX_PHI+1])[0]
+
+        return Aglm_tt
+
 
     return None
 
