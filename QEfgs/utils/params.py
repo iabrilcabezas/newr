@@ -133,29 +133,28 @@ MASK        = foreground.mask
 DUST        = foreground.dust
 
 FOOTPRINT      = MASK['footprint']
-FOOTPRINT_PATH = MASK['footprint_path']
-APO_DEG        = MASK['apo_deg']
-COORD_MASK     = MASK['coord']
+# FOOTPRINT_PATH = MASK['footprint_path']
+# APO_DEG        = MASK['apo_deg']
+# COORD_MASK     = MASK['coord']
 
 DUST_TYPE      = DUST['type']
 DUST_FREQ      = DUST['freq']
 DUST_PATH_BASE = DUST['path']
-COORD_DUST     = DUST['coord']
+# COORD_DUST     = DUST['coord']
 
 if DUST_TYPE.split('_')[0] == 'pysm':
     DUST_TYPE, DUST_SUBTYPE =DUST_TYPE.split('_')
 else:
     DUST_SUBTYPE = '0'
 
-FOOTPRINT_TYPES = ['so']
-DUST_TYPES      = ['DF', 'van', 'pysm']
-RECONS_PHI_TYPES = ['EB']
+FOOTPRINT_TYPES = ['so','planck', 'act', 'bicep']
+DUST_TYPES      = ['DF', 'van', 'pysm', 'planck']
+RECONS_PHI_TYPES = ['EB','TT']
 RECONS_PSI_TYPES = ['BB']
-
-SO_FOOTPRINT_PATH = '/global/cfs/cdirs/act/data/iabril/SO/mask_apodized_david_nside512.fits'
 
 DF_NAMEFILE = f'DustFilaments_TQU_NS2048_Nfil180p5M_BKpatchNormalization_{int(DUST_FREQ)}p0GHz.fits'
 VAN_NAMEFILE = f'vans_d1_SOS4_{int(DUST_FREQ):03}_tophat_map_2048.fits'
+PLANCK_GNILC_FILENAME = 'COM_CompMap_IQU-thermaldust-gnilc-unires_2048_R3.00.fits'
 
 ## assertions:
 assert 3*NSIDE + 1 > LMAX, 'not enough nside resolution to reach LMAX'
@@ -163,21 +162,36 @@ assert LMAX > LMAX_OUT, 'global Lmax is less than Lmax_out'
 assert LMAX > LMAX_PHI, 'global Lmax is less than Lmax_phi'
 assert LMAX > LMAX_PSI, 'global Lmax is less than Lmax_psi'
 
-assert FOOTPRINT in FOOTPRINT_TYPES, 'undefined footprint'
+assert FOOTPRINT.split('_')[0] in FOOTPRINT_TYPES, 'undefined footprint'
 assert DUST_TYPE in DUST_TYPES, 'undefined dust foreground'
 assert RECONS_PHI in RECONS_PHI_TYPES, 'that phi reconstruction is not implemented'
 assert RECONS_PSI in RECONS_PSI_TYPES, 'that psi reconstruction is not implemented'
 
 if FOOTPRINT == 'so':
-    assert FOOTPRINT_PATH == SO_FOOTPRINT_PATH
-    assert COORD_MASK == 'C'
+    SO_FOOTPRINT_PATH = '/global/cfs/cdirs/act/data/iabril/SO/mask_apodized_david_nside512.fits'
+    FOOTPRINT_PATH = SO_FOOTPRINT_PATH
+    COORD_MASK = 'C'
+elif FOOTPRINT.split('_')[0] == 'planck':
+    PLANCK_FOOTPRINT_PATH = '/pscratch/sd/i/iabril/data/PlanckData/HFI_Mask_GalPlane-apo5_2048_R2.00.fits'
+    FOOTPRINT_PATH = PLANCK_FOOTPRINT_PATH
+    COORD_MASK = 'G'
+elif FOOTPRINT.split('_')[0] == 'act':
+    ACT_FOOTPRINT_PATH =  f'/pscratch/sd/i/iabril/data/ACT/masks/act_mask_20220316_GAL{FOOTPRINT.split("_")[1]:03}_rms_70.00_d2_healpy_EQU.fits'
+    FOOTPRINT_PATH = ACT_FOOTPRINT_PATH
+    COORD_MASK = 'C'
+elif FOOTPRINT == 'bicep':
+    BICEP_FOOTPRINT_PATH = '/pscratch/sd/i/iabril/data/BK/bk18_mask_largefield_gal_n0512.fits'
+    FOOTPRINT_PATH = BICEP_FOOTPRINT_PATH
+    COORD_MASK = 'G'
 
 if DUST_TYPE == 'DF':
-    assert COORD_DUST == 'G'
+    COORD_DUST = 'G'
 elif DUST_TYPE == 'van':
-    assert COORD_DUST == 'G'
+    COORD_DUST = 'G'
 elif DUST_TYPE == 'pysm':
-    assert COORD_DUST == 'G'
+    COORD_DUST = 'G'
+elif DUST_TYPE == 'planck':
+    COORD_DUST = 'G'
 
 if DUST_TYPE == 'DF':
     DUST_PATH = DUST_PATH_BASE + 'DF/' + DF_NAMEFILE
@@ -185,6 +199,12 @@ elif DUST_TYPE == 'van':
     DUST_PATH = DUST_PATH_BASE + 'Vansyngel/' + VAN_NAMEFILE
 elif DUST_TYPE == 'pysm':
     DUST_PATH = 'NA'
+elif DUST_TYPE == 'planck':
+    DUST_PATH = DUST_PATH_BASE + 'PlanckData/' + PLANCK_GNILC_FILENAME
 
 NAME_RUN  = f'{LMAX}_{FOOTPRINT}_{DUST_TYPE}_{DUST_SUBTYPE}_{int(DUST_FREQ)}'
-BASE_NAME_THEO = f'cmb/{int(CMB_SEED):03}'
+NAME_THEO = f'{int(CMB_SEED):03}_{R:.2f}_{ALPHA_PHI:.2f}_{ALPHA_PSI:.2F}'
+BASE_NAME_THEO = f'cmb/{NAME_THEO}'
+NAME_LRANGES = f'{LMIN_PHI}_{LMAX_PHI}_{LMIN_PSI}_{LMAX_PSI}'
+
+
