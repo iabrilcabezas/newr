@@ -24,7 +24,7 @@ rcParams['ytick.right'] = True
 rcParams['text.usetex'] = True
 rcParams['font.family'] = 'DejaVu Sans'
 
-TASK = 'compute_alm'
+TASK = 'measure_cell'
 
 TASK_TYPES = ['compute_alm', 'measure_cell', 'plot_cell', 'plot_map']
 assert TASK in TASK_TYPES, 'task undefined'
@@ -39,12 +39,12 @@ L_array = get_ell_arrays(LMAX)[0]
 # measure maps:
 def plot_cell():
     '''plots cell of fgs'''
-    for pol in ['EE','EB','BB']:
+    for pol in ['TT','EE','EB','BB']:
 
         fig, ax = plt.subplots()
 
-        for d, DUST in enumerate(['DF_0', 'pysm_d1','van_0']):
-            cell = np.loadtxt(OUTPUT_PATH + f'fgs/{LMAX}_{FOOTPRINT}_{DUST}_{freq_dict[DUST]}_cl_{pol}.txt')
+        for d, DUST in enumerate(['DF_0', 'pysm_d1','van_0', 'planck_0']):
+            cell = np.loadtxt(OUTPUT_PATH + f'fgs_cell/{LMAX}_{FOOTPRINT}_{DUST}_{freq_dict[DUST]}_cl_{pol}.txt')
 
             if pol == 'EB':
                 negative = cell < 0
