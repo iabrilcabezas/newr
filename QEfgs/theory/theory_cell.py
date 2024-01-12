@@ -134,15 +134,9 @@ def get_EBlm_plm_theo():
     generates EBlm, plm and writes to file
     '''
     lElm, lelm, lBlm, lblm, palm = simulate_lensing_theory()
-    # save it:
-    # write_complex(f'{BASE_NAME_THEO}_palm', palm)
-    # write_complex(f'{BASE_NAME_THEO}_lElm', lElm)
-    # write_complex(f'{BASE_NAME_THEO}_lelm', lelm)
-    # write_complex(f'{BASE_NAME_THEO}_lBlm', lBlm)
-    # write_complex(f'{BASE_NAME_THEO}_lblm', lblm)
-
     # phiphi theory
     pp_theory = cs.utils.alm2cl(LMAX,palm)
+    # save it:
 
     np.save(f'{OUTPUT_PATH}{BASE_NAME_THEO}_pp_theory', pp_theory)
     np.save(f'{OUTPUT_PATH}{BASE_NAME_THEO}_palm', palm)
@@ -161,10 +155,6 @@ def get_EBlm_plm_theo_dellrange():
 
     return_data = {}
     if RECONS_PHI == 'EB':
-        # lElm = read_complex(f'{BASE_NAME_THEO}_lElm')
-        # lBlm = read_complex(f'{BASE_NAME_THEO}_lBlm')
-        # lelm = read_complex(f'{BASE_NAME_THEO}_lelm')
-        # lblm = read_complex(f'{BASE_NAME_THEO}_lblm')
         lElm = np.load(f'{OUTPUT_PATH}{BASE_NAME_THEO}_lElm.npy')
         lBlm = np.load(f'{OUTPUT_PATH}{BASE_NAME_THEO}_lBlm.npy')
         lelm = np.load(f'{OUTPUT_PATH}{BASE_NAME_THEO}_lelm.npy')
@@ -176,8 +166,6 @@ def get_EBlm_plm_theo_dellrange():
         return_data['phi'] = {'E': Elm_phi, 'B': Blm_phi}
 
     if RECONS_PSI == 'BB':
-        # lBlm = read_complex(f'{BASE_NAME_THEO}_lBlm')
-        # lblm = read_complex(f'{BASE_NAME_THEO}_lblm')
         lBlm = np.load(f'{OUTPUT_PATH}{BASE_NAME_THEO}_lBlm.npy')
         lblm = np.load(f'{OUTPUT_PATH}{BASE_NAME_THEO}_lblm.npy')
 
